@@ -42,9 +42,9 @@ Route::middleware('auth')->group(function () {
         Route::put('/pustakawan/anggota/{anggota}', [PustakawanController::class, 'updateAnggota'])->name('pustakawan.anggota.update');
         Route::delete('/pustakawan/anggota/{anggota}', [PustakawanController::class, 'destroyAnggota'])->name('pustakawan.anggota.destroy');
 
-        // Placeholder for transaction routes as they appear in layout/dashboard
-        Route::get('/pustakawan/transaksi', function() { return 'Data Transaksi (Nanti dibikin)'; })->name('pustakawan.transaksi');
-        Route::get('/pustakawan/transaksi/create', function() { return 'Buat Transaksi (Nanti dibikin)'; })->name('pustakawan.transaksi.create');
+        // Route Kelola Transaksi
+        Route::get('/pustakawan/transaksi', [PustakawanController::class, 'indexTransaksi'])->name('pustakawan.transaksi');
+        Route::get('/pustakawan/transaksi/create', [PustakawanController::class, 'createTransaksi'])->name('pustakawan.transaksi.create');
     });
 
     // --- DASHBOARD ANGGOTA ---

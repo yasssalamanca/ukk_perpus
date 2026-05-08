@@ -186,4 +186,27 @@ class PustakawanController extends Controller
         $anggota->delete();
         return redirect()->route('pustakawan.anggota')->with('success', 'Anggota berhasil dihapus!');
     }
+
+    // === 3. KELOLA TRANSAKSI (PEMINJAMAN) ===
+    public function indexTransaksi(Request $request)
+    {
+        // Ambil data peminjaman beserta data relasinya (Eager Loading) biar database ga ngos-ngosan
+        $query = Peminjaman::with(['user', 'buku'])->latest();
+
+        // Fitur Pencarian berdasarkan Kode Transaksi
+        if ($request->has('search')) {
+            $query->where('kode_transaksi', 'like', '%' . $request->search . '%');
+        }
+
+        $transaksis = $query->paginate(10);
+        return view('pustakawan.transaksi.index', compact('transaksis'));
+    }
+
+    public function createTransaksi()
+    {
+        // PENTING: Cuma ambil anggota, dan ambil buku yang STOKNYA LEBIH DARI 0
+        $anggotas = User::where('role', 'anggota')->get();
+        $bukus = Buku::where('stok', '>', 0)->get();
+        return view('pustakawan.transaksi.create', compact('anggotas', 'bukus'));
+    }
 }

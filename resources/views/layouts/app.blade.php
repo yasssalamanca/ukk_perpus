@@ -244,7 +244,7 @@
  <a href="{{ route('pustakawan.dashboard') }}">Dashboard</a>
  <a href="{{ route('pustakawan.buku') }}">Data Buku</a>
  <a href="{{ route('pustakawan.anggota') }}">Data Anggota</a>
- <a href="{{ route('pustakawan.transaksi') }}">Data Transaksi</a>
+ <a href="{{ route('pustakawan.transaksi') }}">Transaksi</a>
  @endif
  @if(Auth::user()->role === 'anggota')
  <a href="{{ route('anggota.dashboard') }}">Dashboard</a>

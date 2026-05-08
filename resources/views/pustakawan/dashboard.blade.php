@@ -69,7 +69,7 @@ style="width: auto;">+ Tambah Buku Baru</a>
  <a href="{{ route('pustakawan.anggota.create') }}" class="btn bg-success"
 style="width: auto;">+ Daftarkan Anggota Baru</a>
  <a href="{{ route('pustakawan.transaksi.create') }}" class="btn bg-primary"
-style="background-color: #6366f1; width: auto;">+ Buat Transaksi Pinjam</a>
+ style="background-color: #6366f1; width: auto;">+ Buat Transaksi Pinjam</a>
  </div>
  </div>
  </div>
