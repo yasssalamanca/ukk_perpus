@@ -17,6 +17,7 @@ class Peminjaman extends Model
         'kode_transaksi',
         'user_id',
         'buku_id',
+        'jumlah',
         'tanggal_pinjam',
         'tanggal_kembali',
         'status',

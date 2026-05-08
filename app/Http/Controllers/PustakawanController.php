@@ -209,54 +209,55 @@ class PustakawanController extends Controller
         $bukus = Buku::where('stok', '>', 0)->get();
         return view('pustakawan.transaksi.create', compact('anggotas', 'bukus'));
     }
+
     public function storeTransaksi(Request $request)
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'buku_id' => 'required|exists:bukus,id',
+            'jumlah' => 'required|numeric|min:1', // Validasi jumlah minimal 1
         ]);
 
         $buku = Buku::findOrFail($request->buku_id);
 
-        // Pengaman: Cek lagi stoknya, takutnya ada yang ngakalin form dari Inspect Element
-        if ($buku->stok < 1) {
-            return back()->with('error', 'Gagal! Stok buku ini sudah habis.');
+        // CEGAH: Jika jumlah pinjam melebihi stok yang tersedia
+        if ($request->jumlah > $buku->stok) {
+            return back()->with('error', 'Gagal! Stok tersedia hanya ' . $buku->stok . '. Anda mencoba meminjam ' . $request->jumlah . '.');
         }
 
-        // 1. Simpan data peminjaman
+        // 1. Simpan data peminjaman dengan jumlah
         Peminjaman::create([
             'kode_transaksi' => 'TRX-' . date('Ymd') . '-' . rand(1000, 9999),
             'user_id' => $request->user_id,
             'buku_id' => $request->buku_id,
-            'tanggal_pinjam' => now()->toDateString(), // Tanggal hari ini
+            'jumlah' => $request->jumlah, // Simpan jumlahnya
+            'tanggal_pinjam' => now()->toDateString(),
             'status' => 'dipinjam'
         ]);
 
-        // 2. Kurangi stok buku
-        $buku->decrement('stok');
+        // 2. Kurangi stok buku sesuai jumlah yang dipinjam
+        $buku->decrement('stok', $request->jumlah);
 
-        return redirect()->route('pustakawan.transaksi')->with('success', 'Transaksi berhasil! Stok buku otomatis berkurang.');
+        return redirect()->route('pustakawan.transaksi')->with('success', 'Transaksi berhasil! Stok berkurang ' . $request->jumlah . '.');
     }
 
     public function kembaliTransaksi($id)
     {
         $transaksi = Peminjaman::findOrFail($id);
 
-        // Pengaman: Jangan sampai transaksi yang udah selesai diklik kembali lagi (nanti stoknya nambah terus)
         if ($transaksi->status === 'dikembalikan') {
-            return back()->with('error', 'Buku ini sudah dikembalikan sebelumnya!');
+            return back()->with('error', 'Buku ini sudah dikembalikan!');
         }
 
-        // 1. Update status dan tanggal kembali
         $transaksi->update([
             'status' => 'dikembalikan',
             'tanggal_kembali' => now()->toDateString()
         ]);
 
-        // 2. Kembalikan stok buku
+        // Kembalikan stok sesuai jumlah yang pernah dipinjam
         $buku = Buku::findOrFail($transaksi->buku_id);
-        $buku->increment('stok');
+        $buku->increment('stok', $transaksi->jumlah);
 
-        return redirect()->route('pustakawan.transaksi')->with('success', 'Buku berhasil dikembalikan! Stok buku bertambah.');
+        return redirect()->route('pustakawan.transaksi')->with('success', 'Buku berhasil kembali! Stok bertambah ' . $transaksi->jumlah . '.');
     }
 }

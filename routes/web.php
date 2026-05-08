@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PustakawanController;
+use App\Http\Controllers\AnggotaController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -51,8 +52,8 @@ Route::middleware('auth')->group(function () {
 
     // --- DASHBOARD ANGGOTA ---
     Route::middleware('role:anggota')->group(function () {
-        Route::get('/anggota/dashboard', function () {
-            return 'Dashboard Anggota (Nanti dibikin)';
-        })->name('anggota.dashboard');
+        Route::get('/anggota/dashboard', [AnggotaController::class, 'dashboard'])->name('anggota.dashboard');
+        Route::get('/anggota/pinjam-buku', [AnggotaController::class, 'bukuTersedia'])->name('anggota.pinjam');
+        Route::get('/anggota/kembalikan-buku', [AnggotaController::class, 'peminjamanSaya'])->name('anggota.kembali');
     });
 });
