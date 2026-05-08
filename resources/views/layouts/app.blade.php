@@ -233,7 +233,7 @@
  </style>
 </head>
 <body>
-<nav class="navbar">
+ <nav class="navbar">
  <div class="navbar-brand"> Perpus UKK</div>
  <div class="nav-links">
  @guest
@@ -243,6 +243,8 @@
  @if(Auth::user()->role === 'pustakawan')
  <a href="{{ route('pustakawan.dashboard') }}">Dashboard</a>
  <a href="{{ route('pustakawan.buku') }}">Data Buku</a>
+ <a href="{{ route('pustakawan.anggota') }}">Data Anggota</a>
+ <a href="{{ route('pustakawan.transaksi') }}">Data Transaksi</a>
  @endif
  @if(Auth::user()->role === 'anggota')
  <a href="{{ route('anggota.dashboard') }}">Dashboard</a>

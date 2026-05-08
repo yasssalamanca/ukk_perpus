@@ -111,4 +111,79 @@ class PustakawanController extends Controller
 
         return view('pustakawan.dashboard', compact('totalBuku', 'totalAnggota', 'totalPinjam'));
     }
+
+    // === 2. KELOLA DATA ANGGOTA ===
+    public function indexAnggota(Request $request)
+    {
+        // Fitur Pencarian Anggota (Berdasarkan Nama atau NIS)
+        $query = User::where('role', 'anggota');
+        if ($request->has('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                    ->orWhere('nis', 'like', '%' . $request->search . '%');
+            });
+        }
+        $anggotas = $query->paginate(10);
+        return view('pustakawan.anggota.index', compact('anggotas'));
+    }
+
+    public function createAnggota()
+    {
+        return view('pustakawan.anggota.create');
+    }
+
+    public function storeAnggota(Request $request)
+    {
+        $request->validate([
+            'nis' => 'required|unique:users',
+            'name' => 'required',
+            'kelas' => 'required',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:6'
+        ]);
+
+        User::create([
+            'nis' => $request->nis,
+            'name' => $request->name,
+            'kelas' => $request->kelas,
+            'email' => $request->email,
+            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+            'role' => 'anggota' // Otomatis jadi anggota
+        ]);
+
+        return redirect()->route('pustakawan.anggota')->with('success', 'Anggota baru berhasil ditambahkan!');
+    }
+
+    public function editAnggota(User $anggota)
+    {
+        return view('pustakawan.anggota.edit', compact('anggota'));
+    }
+
+    public function updateAnggota(Request $request, User $anggota)
+    {
+        // Validasi unik kecuali untuk ID anggota ini sendiri
+        $request->validate([
+            'nis' => 'required|unique:users,nis,' . $anggota->id,
+            'name' => 'required',
+            'kelas' => 'required',
+            'email' => 'required|email|unique:users,email,' . $anggota->id,
+            'password' => 'nullable|min:6' // Password opsional saat diedit
+        ]);
+
+        $data = $request->only(['nis', 'name', 'kelas', 'email']);
+
+        // Kalau password diisi baru, maka update dan hash. Kalau kosong, abaikan.
+        if ($request->filled('password')) {
+            $data['password'] = \Illuminate\Support\Facades\Hash::make($request->password);
+        }
+
+        $anggota->update($data);
+        return redirect()->route('pustakawan.anggota')->with('success', 'Data anggota berhasil diupdate!');
+    }
+
+    public function destroyAnggota(User $anggota)
+    {
+        $anggota->delete();
+        return redirect()->route('pustakawan.anggota')->with('success', 'Anggota berhasil dihapus!');
+    }
 }
