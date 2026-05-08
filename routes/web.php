@@ -45,6 +45,8 @@ Route::middleware('auth')->group(function () {
         // Route Kelola Transaksi
         Route::get('/pustakawan/transaksi', [PustakawanController::class, 'indexTransaksi'])->name('pustakawan.transaksi');
         Route::get('/pustakawan/transaksi/create', [PustakawanController::class, 'createTransaksi'])->name('pustakawan.transaksi.create');
+        Route::post('/pustakawan/transaksi', [PustakawanController::class, 'storeTransaksi'])->name('pustakawan.transaksi.store');
+        Route::put('/pustakawan/transaksi/{id}/kembali', [PustakawanController::class, 'kembaliTransaksi'])->name('pustakawan.transaksi.kembali');
     });
 
     // --- DASHBOARD ANGGOTA ---

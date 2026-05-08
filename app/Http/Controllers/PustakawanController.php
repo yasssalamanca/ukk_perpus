@@ -209,4 +209,54 @@ class PustakawanController extends Controller
         $bukus = Buku::where('stok', '>', 0)->get();
         return view('pustakawan.transaksi.create', compact('anggotas', 'bukus'));
     }
+    public function storeTransaksi(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'buku_id' => 'required|exists:bukus,id',
+        ]);
+
+        $buku = Buku::findOrFail($request->buku_id);
+
+        // Pengaman: Cek lagi stoknya, takutnya ada yang ngakalin form dari Inspect Element
+        if ($buku->stok < 1) {
+            return back()->with('error', 'Gagal! Stok buku ini sudah habis.');
+        }
+
+        // 1. Simpan data peminjaman
+        Peminjaman::create([
+            'kode_transaksi' => 'TRX-' . date('Ymd') . '-' . rand(1000, 9999),
+            'user_id' => $request->user_id,
+            'buku_id' => $request->buku_id,
+            'tanggal_pinjam' => now()->toDateString(), // Tanggal hari ini
+            'status' => 'dipinjam'
+        ]);
+
+        // 2. Kurangi stok buku
+        $buku->decrement('stok');
+
+        return redirect()->route('pustakawan.transaksi')->with('success', 'Transaksi berhasil! Stok buku otomatis berkurang.');
+    }
+
+    public function kembaliTransaksi($id)
+    {
+        $transaksi = Peminjaman::findOrFail($id);
+
+        // Pengaman: Jangan sampai transaksi yang udah selesai diklik kembali lagi (nanti stoknya nambah terus)
+        if ($transaksi->status === 'dikembalikan') {
+            return back()->with('error', 'Buku ini sudah dikembalikan sebelumnya!');
+        }
+
+        // 1. Update status dan tanggal kembali
+        $transaksi->update([
+            'status' => 'dikembalikan',
+            'tanggal_kembali' => now()->toDateString()
+        ]);
+
+        // 2. Kembalikan stok buku
+        $buku = Buku::findOrFail($transaksi->buku_id);
+        $buku->increment('stok');
+
+        return redirect()->route('pustakawan.transaksi')->with('success', 'Buku berhasil dikembalikan! Stok buku bertambah.');
+    }
 }
